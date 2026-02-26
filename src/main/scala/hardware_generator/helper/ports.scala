@@ -1,0 +1,25 @@
+package helper
+
+import chisel3._
+
+class EntryIO extends Bundle {
+	val valid = Input(Bool())
+	val ready = Output(Bool())
+}
+
+class ExitIO extends Bundle {
+	val valid = Output(Bool())
+	val ready = Input(Bool())
+}
+
+class FP(val preci:Int, val precf:Int) extends Bundle {
+	val i = Input(UInt(preci.W) )
+	val f = Input(UInt(precf.W) )
+}
+
+class FloatingPoint(exp:Int, mant:Int) extends Bundle {
+	val sign = Input(UInt(1.W))
+	val exponent = Input(UInt(exp.W))
+	val mantissa = Input(UInt(mant.W))
+}
+
