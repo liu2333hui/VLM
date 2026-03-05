@@ -1,0 +1,25 @@
+[
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~UIntBasicMultiplier|UIntBasicMultiplier>io_entry_ready",
+    "sources":[
+      "~UIntBasicMultiplier|UIntBasicMultiplier>io_exit_ready"
+    ]
+  },
+  {
+    "class":"firrtl.options.TargetDirAnnotation",
+    "directory":"./generaced/Primitive/UIntBasicMultiplier"
+  },
+  {
+    "class":"firrtl.options.OutputAnnotationFileAnnotation",
+    "file":"UIntBasicMultiplier"
+  },
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"./generaced/Primitive/UIntBasicMultiplier"
+  }
+]

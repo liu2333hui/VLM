@@ -253,12 +253,12 @@ class exp_op(val preci:Int = 8, val precf:Int = 8,
 class sin_op(val preci:Int = 8, val precf:Int = 8, 
 	val MultThroughput:Int = 4, val MultDelay:Int = 4, val stages:Int = 1) extends Module{
 	val io = IO(new FixedPointUnaryIO(preci, precf))
-	val w0 = 1.260e-5
-	val w1 = 0.9996
-	val w2 = 0.002307
-	val w3 = -0.1723
-	val w4 = 0.006044
-	val w5 = 0.005752
+	val w0 = 0.0
+	val w1 = 1.0
+	val w2 = 0.0
+	val w3 = -1.0/(3*2)
+	val w4 = 0.0
+	val w5 = 1.0/(5*4*3*2)
 	val main = Module(new approx_op(preci, precf, 
 		MultThroughput, MultDelay, stages, 
 			w0,w1,w2,w3,w4,w5,
@@ -389,7 +389,7 @@ object sin_op_test extends App{
 			initial begin
 			testvectors[0] = 0.2;
 			testvectors[1] = 3.14/4;
-			testvectors[2] = ;//{0.2, 0.7, 0.9};
+			testvectors[2] = 3.14/2;//{0.2, 0.7, 0.9};
 			
 			end
 			

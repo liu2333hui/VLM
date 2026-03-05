@@ -21,6 +21,101 @@ import helper._
 
 
 
+class PipelineFPData(val  preci :Int, val precf:Int ) extends Module{
+	
+	val io = IO(new Bundle{
+		val in = new Bundle{
+			val valid = Input(UInt(1.W))
+			val ready = Output(UInt(1.W))
+			val bits = new FP(preci, precf) 
+		}
+		
+		val out = new Bundle{
+			val valid = Output(UInt(1.W))
+			val ready = Input(UInt(1.W))
+			val bits = Flipped(new FP(preci, precf))
+		}
+	})
+	
+	val m = Module(new PipelineData(preci+precf))
+	m.io.in.valid := io.in.valid
+	io.in.ready := m.io.in.ready 
+	
+	io.out.valid := m.io.out.valid
+	m.io.out.ready := io.out.ready 
+	
+	m.io.in.bits := Cat( io.in.bits.i , io.in.bits.f )
+	io.out.bits.i := m.io.out.bits(precf+preci-1,precf)
+	io.out.bits.f := m.io.out.bits(precf,0)
+}
+
+object PipelineFPDataTest extends App{
+	
+	val file = "./generated/suan/PipelineFPData"
+	
+	new (chisel3.stage.ChiselStage).execute(Array("--target-dir", file),
+		Seq(ChiselGeneratorAnnotation(() => new PipelineFPData( 
+			4, 4
+		  )    )))	
+	
+	//Simulation using vcs or iverilog
+	sim.iverilog(svtbfile = file+"/PipelineFPData.tb.sv", svfiles = Seq(file+"/PipelineFPData.v"), svtb = """
+			initial begin
+				reset = 0;
+				#10;
+				reset = 1;
+				#10;
+				reset = 0;
+				
+				//Normal
+				io_in_bits_i = 8; io_in_bits_f = 4;
+				io_in_valid = 1; 
+				io_out_ready = 1;
+
+				@(posedge clock);
+				#1;
+				assert(io_out_bits_i == io_in_bits_i);
+				assert(io_out_bits_f == io_in_bits_f);
+				assert(io_out_valid == 1);
+				#1;
+				io_in_bits_i = 2; io_in_bits_f = 3;
+				
+				@(posedge clock);
+				#1;
+				assert(io_out_bits_i == io_in_bits_i);
+				assert(io_out_bits_f == io_in_bits_f);
+				#1;
+				io_in_valid = 0;
+
+				
+				
+			end
+	""")
+	
+	
+}
+
+
+class PipelineSIntData(val  prec :Int ) extends Module{
+	
+	val io = IO(new Bundle{
+		val in = Flipped(DecoupledIO(SInt(prec.W)))
+		val out = DecoupledIO(SInt(prec.W))
+	})
+	
+	val m = Module(new PipelineData(prec))
+	m.io.in.valid := io.in.valid
+	io.in.ready := m.io.in.ready 
+	
+	io.out.valid := m.io.out.valid
+	m.io.out.ready := io.out.ready 
+	
+	m.io.in.bits := io.in.bits.asUInt 
+	io.out.bits := m.io.out.bits.asSInt
+	
+}
+
+
 class PipelineData(val  prec :Int ) extends Module{
 	
 	val io = IO(new Bundle{

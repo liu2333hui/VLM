@@ -1,0 +1,25 @@
+[
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~DenseFixedPointOnlineSoftmaxDenominatorPEArray|DenseFixedPointOnlineSoftmaxDenominatorPEArray>io_entry_ready",
+    "sources":[
+      "~DenseFixedPointOnlineSoftmaxDenominatorPEArray|DenseFixedPointOnlineSoftmaxDenominatorPEArray>io_exit_ready"
+    ]
+  },
+  {
+    "class":"firrtl.options.TargetDirAnnotation",
+    "directory":"./generaced/Primitive/DenseFixedPointOnlineSoftmaxDenominatorPEArray"
+  },
+  {
+    "class":"firrtl.options.OutputAnnotationFileAnnotation",
+    "file":"DenseFixedPointOnlineSoftmaxDenominatorPEArray"
+  },
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"./generaced/Primitive/DenseFixedPointOnlineSoftmaxDenominatorPEArray"
+  }
+]

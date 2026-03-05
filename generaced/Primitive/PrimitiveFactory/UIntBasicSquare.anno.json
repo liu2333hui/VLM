@@ -1,0 +1,25 @@
+[
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~UIntBasicSquare|UIntBasicSquare>io_entry_ready",
+    "sources":[
+      "~UIntBasicSquare|UIntBasicSquare>io_exit_ready"
+    ]
+  },
+  {
+    "class":"firrtl.options.TargetDirAnnotation",
+    "directory":"./generaced/Primitive/PrimitiveFactory"
+  },
+  {
+    "class":"firrtl.options.OutputAnnotationFileAnnotation",
+    "file":"UIntBasicSquare"
+  },
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"./generaced/Primitive/PrimitiveFactory"
+  }
+]

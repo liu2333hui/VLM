@@ -477,7 +477,7 @@ class MyCompiler:
                 for ou in k['outputIndexes']:
                    print(k['name'], k['type'], ou, tensors[ou], vals.get(ou, ''))
             #    #print(65, tensors.get(65,''))
-            #input()
+                input()
         self.exec_order = exec_order
         self.vals = vals
         self.tensors = tensors
@@ -569,7 +569,7 @@ class MyCompiler:
             #print(k['name'])
         
 
-    def arch_perf(self):
+    def arch_perf(self, debug = True):
         skip = ['Input', 'Const',]  + [ 'Slice', 'SliceTf', 'StridedSlice','Unsqueeze', 'Squeeze' , 'Reshape' ] + ['Cast', 'GatherV2'] + ['Unpack']#+ [ 'ConvertTensor', ]
         exec_order = self.exec_order 
         vals = self.vals
@@ -803,8 +803,8 @@ class MyCompiler:
 
                         elif(op == "SILU" or op == "TANH" or op == "GELU"):
                             comp_cyc = tiles(b,  unit['Tile']['B'])* config["SubUnits"]["Activations"]['Throughput'] 
-                        print(k)
-                        input()
+                        #print(k)
+                        #input()
                     elif(ty == "LayerNorm"):
 
                         b = get_size(tensor0[ 0:-1 ])
@@ -824,7 +824,10 @@ class MyCompiler:
                     else:
                         print("not implement " + k['type'])
                         return
-                    #print(k)
+
+                    if(debug):
+                        print(k)
+                        input()
                     dram_time = dram_cyc * Clock
                     comp_time = comp_cyc * Clock
 
@@ -910,7 +913,8 @@ hw = {
         "Address": {
             "AddrPrec": 16,
             "SubUnits": {
-                "Multiplier": {"Throughput": 4, "Delay": 4}  }},},
+                "Multiplier": {"Throughput": 4, "Delay": 4}  }},
+    },
     "Ops":{
         "ConvertTensor": {
             "Tile": TN,

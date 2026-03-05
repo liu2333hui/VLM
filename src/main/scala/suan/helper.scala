@@ -9,8 +9,23 @@ import java.io.PrintWriter
 import scala.io.Source
 import scala.util.matching.Regex
 import scala.sys.process._
+
+
+object testbench {
+	// SetVector("io_in0", Seq(0,1,2,3,4,5,6,7))
+	def set_vector(vec:String, data:Seq[Integer], hou :String=""):String = {
+		var s = ""
+		var idx = 0
+		for(d <- data){
+			s = s + vec + "_"+idx + hou+"=" + d + ";\n"
+			idx = idx + 1
+		}
+		s
+	}
+}
+
 object sim{
-	
+
 	
 def get_meta(filename:String, id:Int, signed_logic:Seq[String]) : Map[String,String] = {
 	// 读取文件内容
@@ -134,7 +149,7 @@ def iverilog( svtb:String,  svtbfile:String,  svfiles: Seq[String] , extra_top_i
 				reset = 0;
 				#10;
 				reset = 1;
-				#15;
+				#10;
 				reset = 0;
 			end
 	    endtask
@@ -164,8 +179,18 @@ def iverilog( svtb:String,  svtbfile:String,  svfiles: Seq[String] , extra_top_i
 	println(process)
 	var compileResult =	process.!
 	println("Run iverilog status - " + compileResult)
+	val iverilogStatus = compileResult 
 	compileResult =	process2.!
 	println("Run vvd generate vcd status - "+compileResult)
+	
+	
+	if(iverilogStatus == 0 && compileResult == 0){
+		println("Completed success")
+	}else{
+		println("Completed failed")
+	}
+	// println("Completed status " + iverilogStatus + " " + compileResult)
+	
 	
 }
 
