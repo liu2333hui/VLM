@@ -44,7 +44,7 @@ class FixedPointTrigExp(HardwareConfig : Map[String, String]) extends FixedPoint
 	val w5 = 1.0/120
 	val main = Module(new approx_op(preci, precf, 
 		MultThroughput, MultDelay, stages, 
-			w0,w1,w2,w3,w4,w5,
+			w0,w1,w2,w3,w4,w5, top = desiredName
 		))
 	// main.io <> io
 	main.io.out <> io.exit

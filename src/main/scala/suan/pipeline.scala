@@ -115,9 +115,60 @@ class PipelineSIntData(val  prec :Int ) extends Module{
 	
 }
 
+class PipelineSInt(HardwareConfig:Map[String,String] ) extends Module{
+	val prec = HardwareConfig("prec").toInt
+	override def desiredName = HardwareConfig("desiredName")+"_PipelineSInt"//HardwareConfig.get("desiredName", "PipelineSIntData")
+	
+	val io = IO(new Bundle{
+		val in = Flipped(DecoupledIO(SInt(prec.W)))
+		val out = DecoupledIO(SInt(prec.W))
+	})
+	
+	val m = Module(new PipelineUInt(HardwareConfig))
+	m.io.in.valid := io.in.valid
+	io.in.ready := m.io.in.ready 
+	
+	io.out.valid := m.io.out.valid
+	m.io.out.ready := io.out.ready 
+	
+	m.io.in.bits := io.in.bits.asUInt 
+	io.out.bits := m.io.out.bits.asSInt
+	
+}
+
+class PipelineUInt(HardwareConfig:Map[String,String] ) extends Module{
+	
+	val prec = HardwareConfig("prec").toInt
+	
+	override def desiredName = HardwareConfig("desiredName")+"_PipelineUInt"//, "PipelineData")
+
+	val io = IO(new Bundle{
+		val in = Flipped(DecoupledIO(UInt(prec.W)))
+		val out = DecoupledIO(UInt(prec.W))
+	})
+	
+	val bits = RegInit(0.U(prec.W))
+	val valid = RegInit(0.U(1.W))
+	io.out.valid := valid
+	io.in.ready := io.out.ready
+	io.out.bits := bits
+	
+	when(io.in.valid && io.in.ready && io.out.ready){
+		valid := io.in.valid
+		bits := io.in.bits
+	}.otherwise{
+		when(io.in.valid && io.in.ready &&  !io.out.valid){
+			valid := io.in.valid
+			bits := io.in.bits
+		}
+	}
+	
+}
+
 
 class PipelineData(val  prec :Int ) extends Module{
 	
+
 	val io = IO(new Bundle{
 		val in = Flipped(DecoupledIO(UInt(prec.W)))
 		val out = DecoupledIO(UInt(prec.W))

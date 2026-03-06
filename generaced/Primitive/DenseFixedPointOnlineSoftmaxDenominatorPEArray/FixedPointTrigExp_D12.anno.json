@@ -1,11 +1,18 @@
 [
   {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~FixedPointTrigExp_D12|FixedPointTrigExp_D12>io_entry_ready",
+    "sources":[
+      "~FixedPointTrigExp_D12|FixedPointTrigExp_D12>io_exit_ready"
+    ]
+  },
+  {
     "class":"firrtl.options.TargetDirAnnotation",
     "directory":"./generaced/Primitive/DenseFixedPointOnlineSoftmaxDenominatorPEArray"
   },
   {
     "class":"firrtl.options.OutputAnnotationFileAnnotation",
-    "file":"DenseFixedPointOnlineSoftmaxDenominatorPEArray"
+    "file":"FixedPointTrigExp_D12"
   },
   {
     "class":"firrtl.EmitCircuitAnnotation",

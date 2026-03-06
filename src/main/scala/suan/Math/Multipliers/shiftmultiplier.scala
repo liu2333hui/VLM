@@ -32,7 +32,10 @@ class MultiplierShiftIO(val Prec1:Int, val Prec2:Int) extends Bundle {
 }
 
 
-class BoothEncoder(val Prec1:Int, val Prec2:Int, val ShiftAmount:Int) extends Module {
+class BoothEncoder(val Prec1:Int, val Prec2:Int, val ShiftAmount:Int,
+	val top:String=""
+) extends Module {
+	override def desiredName = top+"_BoothEncoder"
 
 	val bits = ShiftAmount + 1
 	
@@ -194,7 +197,11 @@ class BoothEncoder(val Prec1:Int, val Prec2:Int, val ShiftAmount:Int) extends Mo
 // class PipelinedMultiplier(val Throughput:Int, val Delay:Int, val Prec1:Int, val Prec2:Int) extends Module{	
 // }
 
-class BoothMultiplier(val Delay :Int, val Prec1:Int, val Prec2:Int) extends Module {
+class BoothMultiplier(val Delay :Int, val Prec1:Int, val Prec2:Int,
+	val top:String = "") extends Module {
+
+	override def desiredName = top+"_BoothMultiplier"
+
 
     val io = IO(new MultiplierShiftIO(Prec1, Prec2))
 	val cnt = RegInit(0.U(32.W))
@@ -218,7 +225,8 @@ class BoothMultiplier(val Delay :Int, val Prec1:Int, val Prec2:Int) extends Modu
 	}else{
 		val ShiftAmount : Int = Prec1 / Delay
 		//Radix
-		val be = Module(new BoothEncoder(Prec1= Prec1, Prec2 = Prec2, ShiftAmount = ShiftAmount))
+		val be = Module(new BoothEncoder(top=desiredName,
+		Prec1= Prec1, Prec2 = Prec2, ShiftAmount = ShiftAmount))
 		
 		
 		//Multi-cycle Booth Multiplier

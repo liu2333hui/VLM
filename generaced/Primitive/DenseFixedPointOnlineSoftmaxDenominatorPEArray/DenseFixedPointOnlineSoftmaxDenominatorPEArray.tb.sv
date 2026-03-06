@@ -1,52 +1,76 @@
 
  module tb();
 	
-	 bit         clock ;
- bit         reset ;
- bit   [7:0] io_in0_0_i ;
- bit   [7:0] io_in0_0_f ;
- bit   [7:0] io_in0_1_i ;
- bit   [7:0] io_in0_1_f ;
- bit   [7:0] io_in0_2_i ;
- bit   [7:0] io_in0_2_f ;
- bit   [7:0] io_in0_3_i ;
- bit   [7:0] io_in0_3_f ;
- bit   [7:0] io_in0_4_i ;
- bit   [7:0] io_in0_4_f ;
- bit   [7:0] io_in0_5_i ;
- bit   [7:0] io_in0_5_f ;
- bit   [7:0] io_in0_6_i ;
- bit   [7:0] io_in0_6_f ;
- bit   [7:0] io_in0_7_i ;
- bit   [7:0] io_in0_7_f ;
- bit   [7:0] io_in1_0_i ;
- bit   [7:0] io_in1_0_f ;
- bit   [7:0] io_in1_1_i ;
- bit   [7:0] io_in1_1_f ;
- bit   [7:0] io_in1_2_i ;
- bit   [7:0] io_in1_2_f ;
- bit   [7:0] io_in1_3_i ;
- bit   [7:0] io_in1_3_f ;
- bit   [7:0] io_in2_0_i ;
- bit   [7:0] io_in2_0_f ;
- bit   [7:0] io_in2_1_i ;
- bit   [7:0] io_in2_1_f ;
- bit   [7:0] io_in2_2_i ;
- bit   [7:0] io_in2_2_f ;
- bit   [7:0] io_in2_3_i ;
- bit   [7:0] io_in2_3_f ;
- bit  [7:0] io_out0_0_i ;
- bit  [7:0] io_out0_0_f ;
- bit  [7:0] io_out0_1_i ;
- bit  [7:0] io_out0_1_f ;
- bit  [7:0] io_out0_2_i ;
- bit  [7:0] io_out0_2_f ;
- bit  [7:0] io_out0_3_i ;
- bit  [7:0] io_out0_3_f ;
- bit        io_exit_valid ;
- bit         io_exit_ready ;
- bit         io_entry_valid ;
- bit        io_entry_ready ;
+	 bit          clock ;
+ bit          reset ;
+ bit   [7:0]  io_in0_0_i ;
+ bit   [7:0]  io_in0_0_f ;
+ bit   [7:0]  io_in0_1_i ;
+ bit   [7:0]  io_in0_1_f ;
+ bit   [7:0]  io_in0_2_i ;
+ bit   [7:0]  io_in0_2_f ;
+ bit   [7:0]  io_in0_3_i ;
+ bit   [7:0]  io_in0_3_f ;
+ bit   [7:0]  io_in0_4_i ;
+ bit   [7:0]  io_in0_4_f ;
+ bit   [7:0]  io_in0_5_i ;
+ bit   [7:0]  io_in0_5_f ;
+ bit   [7:0]  io_in0_6_i ;
+ bit   [7:0]  io_in0_6_f ;
+ bit   [7:0]  io_in0_7_i ;
+ bit   [7:0]  io_in0_7_f ;
+ bit   [7:0]  io_in1_0_i ;
+ bit   [7:0]  io_in1_0_f ;
+ bit   [7:0]  io_in1_1_i ;
+ bit   [7:0]  io_in1_1_f ;
+ bit   [7:0]  io_in1_2_i ;
+ bit   [7:0]  io_in1_2_f ;
+ bit   [7:0]  io_in1_3_i ;
+ bit   [7:0]  io_in1_3_f ;
+ bit   [7:0]  io_in2_0_i ;
+ bit   [7:0]  io_in2_0_f ;
+ bit   [7:0]  io_in2_1_i ;
+ bit   [7:0]  io_in2_1_f ;
+ bit   [7:0]  io_in2_2_i ;
+ bit   [7:0]  io_in2_2_f ;
+ bit   [7:0]  io_in2_3_i ;
+ bit   [7:0]  io_in2_3_f ;
+ bit  [7:0]  io_out0_0_i ;
+ bit  [7:0]  io_out0_0_f ;
+ bit  [7:0]  io_out0_1_i ;
+ bit  [7:0]  io_out0_1_f ;
+ bit  [7:0]  io_out0_2_i ;
+ bit  [7:0]  io_out0_2_f ;
+ bit  [7:0]  io_out0_3_i ;
+ bit  [7:0]  io_out0_3_f ;
+ bit  [7:0]  io_tmp_0_i ;
+ bit  [7:0]  io_tmp_0_f ;
+ bit  [7:0]  io_tmp_1_i ;
+ bit  [7:0]  io_tmp_1_f ;
+ bit  [7:0]  io_tmp_2_i ;
+ bit  [7:0]  io_tmp_2_f ;
+ bit  [7:0]  io_tmp_3_i ;
+ bit  [7:0]  io_tmp_3_f ;
+ bit  [7:0]  io_tmp_4_i ;
+ bit  [7:0]  io_tmp_4_f ;
+ bit  [7:0]  io_tmp_5_i ;
+ bit  [7:0]  io_tmp_5_f ;
+ bit  [7:0]  io_tmp_6_i ;
+ bit  [7:0]  io_tmp_6_f ;
+ bit  [7:0]  io_tmp_7_i ;
+ bit  [7:0]  io_tmp_7_f ;
+ bit  [15:0] io_tmpSInt_0 ;
+ bit  [15:0] io_tmpSInt_1 ;
+ bit  [15:0] io_tmpSInt_2 ;
+ bit  [15:0] io_tmpSInt_3 ;
+ bit  [15:0] io_tmpSInt_4 ;
+ bit  [15:0] io_tmpSInt_5 ;
+ bit  [15:0] io_tmpSInt_6 ;
+ bit  [15:0] io_tmpSInt_7 ;
+ bit         io_exit_valid ;
+ bit          io_exit_ready ;
+ bit          io_entry_valid ;
+ bit         io_entry_ready ;
 
 	
 	
@@ -94,6 +118,30 @@
   io_out0_2_f ,
   io_out0_3_i ,
   io_out0_3_f ,
+  io_tmp_0_i ,
+  io_tmp_0_f ,
+  io_tmp_1_i ,
+  io_tmp_1_f ,
+  io_tmp_2_i ,
+  io_tmp_2_f ,
+  io_tmp_3_i ,
+  io_tmp_3_f ,
+  io_tmp_4_i ,
+  io_tmp_4_f ,
+  io_tmp_5_i ,
+  io_tmp_5_f ,
+  io_tmp_6_i ,
+  io_tmp_6_f ,
+  io_tmp_7_i ,
+  io_tmp_7_f ,
+  io_tmpSInt_0 ,
+  io_tmpSInt_1 ,
+  io_tmpSInt_2 ,
+  io_tmpSInt_3 ,
+  io_tmpSInt_4 ,
+  io_tmpSInt_5 ,
+  io_tmpSInt_6 ,
+  io_tmpSInt_7 ,
   io_exit_valid ,
   io_exit_ready ,
   io_entry_valid ,
@@ -150,7 +198,6 @@ io_in0_5_f=5;
 io_in0_6_f=6;
 io_in0_7_f=7;
 
-				
 				
 				io_in1_0_i=0;
 io_in1_1_i=8;

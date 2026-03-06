@@ -52,6 +52,7 @@ class square_op(){
 	
 }
 
+
 class approx_op(val preci:Int = 8, val precf:Int = 8, 
 	val MultThroughput:Int = 4, val MultDelay:Int = 4, val stages:Int = 1, 
 			val w0 :Double= 1.0,
@@ -59,8 +60,10 @@ class approx_op(val preci:Int = 8, val precf:Int = 8,
 			val w2 :Double= 1.0/2.0,
 			val w3 :Double= 1.0/6.0,
 			val w4 :Double= 1.0/24 ,
-			val w5 :Double= 1.0/120
+			val w5 :Double= 1.0/120,
+			val top: String = "",
 		) extends Module{
+			override def desiredName = top + "_approx_op"
 			
 			val io = IO(new FixedPointUnaryIO(preci, precf))
 			//all less than 1
@@ -72,25 +75,29 @@ class approx_op(val preci:Int = 8, val precf:Int = 8,
 			
 			if(stages == 1){
 				//X pipeline
-				val first_stage = Module(new PipelineData( preci + precf))
+				val first_stage = Module(new PipelineUInt( Map(
+				 "prec" -> (preci + precf).toString,
+				 "desiredName" -> desiredName)))
 			
 				//Multiplier
 				// val first_mul = Module(new MultiplierShift(
 				// 	Throughput = MultThroughput, Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				// val first_mul = Module(new BoothMultiplier(
+				// 	 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
 				val first_mul = Module(new BoothMultiplier(
-					 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
-								 
+					top = desiredName,
+					 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))				 
 				//First Pipe
 				first_stage.io.in.bits := Cat(io.data.i, io.data.f)
 				first_stage.io.out.ready := first_mul.io.out.ready
 				first_stage.io.in.valid := first_mul.io.in.valid
 				
 				//First Mul
-				first_mul.io.math.data1 := Cat(io.data.i, io.data.f)//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
-				first_mul.io.math.data2 := w1f//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
+				first_mul.io.math.data1 := Cat(io.data.i, io.data.f).asSInt//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
+				first_mul.io.math.data2 := w1f.asSInt//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
 				first_mul.io.out.ready := io.out.ready
 				first_mul.io.in.valid := io.in.valid
-				val res3 = Wire(UInt((preci+preci+precf+precf).W))
+				val res3 = Wire(SInt((preci+preci+precf+precf).W))
 				val res3i = Wire(UInt((preci).W))
 				val res3f = Wire(UInt((precf).W))
 				res3 := first_mul.io.math.res + (w0f << precf)
@@ -107,7 +114,219 @@ class approx_op(val preci:Int = 8, val precf:Int = 8,
 			} else if(stages == 2){
 			
 				//X pipeline
-				val first_stage = Module(new PipelineData( preci + precf))
+				// val first_stage = Module(new PipelineUInt( Map(
+				// 	 "prec" -> (preci + precf).toString,
+				// 	 "desiredName" -> "PipelineData")))
+				// val second_stage = Module(new PipelineData( preci + precf))
+				val first_stage = Module(new PipelineUInt( Map(
+				 "prec" -> (preci + precf).toString,
+				 "desiredName" -> desiredName)))
+							
+				//Multiplier
+				// val first_mul = Module(new MultiplierShift(
+				// 	Throughput = MultThroughput, Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				// val second_mul = Module(new MultiplierShift(
+				// 	Throughput = MultThroughput, Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				// val third_mul = Module(new MultiplierShift(
+				// 	Throughput = MultThroughput, Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				
+				// val first_mul = Module(new BoothMultiplier(
+				// 	 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				// val second_mul = Module(new BoothMultiplier(
+				// 	 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				val first_mul = Module(new BoothMultiplier(
+					top = desiredName,
+					 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				val second_mul = Module(new BoothMultiplier(
+					top = desiredName,
+					 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				// val third_mul = Module(new BoothMultiplier(
+				// 	top = desiredName,
+				// 	 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+									 
+				//Pipeline
+				first_stage.io.in.bits := Cat(io.data.i, io.data.f)
+				first_stage.io.out.ready := first_mul.io.out.ready
+				first_stage.io.in.valid := first_mul.io.in.valid
+			
+				//First Mul
+				first_mul.io.math.data1 := Cat(io.data.i, io.data.f).asSInt//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
+				first_mul.io.math.data2 := w2f.asSInt//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
+				first_mul.io.out.ready := second_mul.io.in.ready
+				first_mul.io.in.valid := io.in.valid
+				val res3 = Wire(SInt((preci+preci+precf+precf).W))
+				val res3i = Wire(UInt((preci).W))
+				val res3f = Wire(UInt((precf).W))
+				res3 := first_mul.io.math.res + (w1f << precf)
+				res3i := res3(preci+precf+precf-1, precf+precf)
+				res3f := res3(precf+precf-1, precf)
+				
+				//Second Mul
+				second_mul.io.math.data1 := Cat(res3i, res3f).asSInt//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
+				second_mul.io.math.data2 := first_stage.io.out.bits.asSInt//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
+				second_mul.io.out.ready := io.out.ready
+				second_mul.io.in.valid := first_mul.io.out.valid
+				val res2 = Wire(SInt((preci+preci+precf+precf).W))
+				val res2i = Wire(UInt((preci).W))
+				val res2f = Wire(UInt((precf).W))
+				res2 := second_mul.io.math.res + (w0f << precf)
+				res2i := res2(preci+precf+precf-1, precf+precf)
+				res2f := res2(precf+precf-1, precf)
+			
+				//top io
+				io.in.ready := first_mul.io.in.ready
+				io.out.valid := second_mul.io.out.valid
+				io.res.i := res2i
+				io.res.f := res2f
+				io.debug.data := first_stage.io.out.bits
+			} else if(stages == 3){
+			
+				//X pipeline
+				// val first_stage = Module(new PipelineData( preci + precf))
+				// val second_stage = Module(new PipelineData( preci + precf))
+				val first_stage = Module(new PipelineUInt( Map(
+				 "prec" -> (preci + precf).toString,
+				 "desiredName" -> desiredName)))
+				val second_stage = Module(new PipelineUInt( Map(
+				 "prec" -> (preci + precf).toString,
+				 "desiredName" -> desiredName)))
+
+					
+				//Multiplier
+				// val first_mul = Module(new MultiplierShift(
+				// 	Throughput = MultThroughput, Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				// val second_mul = Module(new MultiplierShift(
+				// 	Throughput = MultThroughput, Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				// val third_mul = Module(new MultiplierShift(
+				// 	Throughput = MultThroughput, Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				
+				val first_mul = Module(new BoothMultiplier(
+					top = desiredName,
+					 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				val second_mul = Module(new BoothMultiplier(
+					top = desiredName,
+					 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				val third_mul = Module(new BoothMultiplier(
+					top = desiredName,
+					 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				
+				//Pipeline for x variable
+				first_stage.io.in.bits := Cat(io.data.i, io.data.f)
+				first_stage.io.out.ready := first_mul.io.out.ready
+				first_stage.io.in.valid := first_mul.io.in.valid && first_mul.io.in.ready
+			
+				second_stage.io.in.bits := first_stage.io.out.bits
+				second_stage.io.out.ready := second_mul.io.out.ready
+				second_stage.io.in.valid := second_mul.io.in.valid && second_mul.io.in.ready
+			
+				//First Mul
+				first_mul.io.math.data1 := Cat(io.data.i, io.data.f).asSInt//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
+				first_mul.io.math.data2 := w3f//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
+				first_mul.io.out.ready := second_mul.io.in.ready
+				first_mul.io.in.valid := io.in.valid
+				val res3 = Wire(SInt((preci+preci+precf+precf).W))
+				val res3i = Wire(UInt((preci).W))
+				val res3f = Wire(UInt((precf).W))
+				res3 := first_mul.io.math.res + (w2f << precf)
+				res3i := res3(preci+precf+precf-1, precf+precf)
+				res3f := res3(precf+precf-1, precf)
+				
+				//Second Mul
+				second_mul.io.math.data1 := Cat(res3i, res3f).asSInt//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
+				second_mul.io.math.data2 := first_stage.io.out.bits.asSInt//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
+				second_mul.io.out.ready := third_mul.io.in.ready
+				second_mul.io.in.valid := first_mul.io.out.valid
+				val res2 = Wire(SInt((preci+preci+precf+precf).W))
+				val res2i = Wire(UInt((preci).W))
+				val res2f = Wire(UInt((precf).W))
+				res2 := second_mul.io.math.res + (w1f << precf)
+				res2i := res2(preci+precf+precf-1, precf+precf)
+				res2f := res2(precf+precf-1, precf)
+			
+				//Third Mul
+				third_mul.io.math.data1 := Cat(res2i, res2f).asSInt//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
+				third_mul.io.math.data2 := second_stage.io.out.bits.asSInt//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
+				third_mul.io.out.ready := io.out.ready
+				third_mul.io.in.valid := second_mul.io.out.valid
+				val res1 = Wire(SInt((preci+preci+precf+precf).W))
+				val res1i = Wire(UInt((preci).W))
+				val res1f = Wire(UInt((precf).W))
+				res1 := third_mul.io.math.res + (w0f << precf)
+				res1i := res1(preci+precf+precf-1, precf+precf)
+				res1f := res1(precf+precf-1, precf)
+			
+			
+				//top io
+				io.in.ready := first_mul.io.in.ready
+				io.out.valid := third_mul.io.out.valid
+				io.res.i := res1i
+				io.res.f := res1f
+				io.debug.data := first_stage.io.out.bits
+	}
+}
+
+class approx_op2(val preci:Int = 8, val precf:Int = 8, 
+	val MultThroughput:Int = 4, val MultDelay:Int = 4, val stages:Int = 1, 
+			val w0 :Double= 1.0,
+			val w1 :Double= 1.0/1.0, 
+			val w2 :Double= 1.0/2.0,
+			val w3 :Double= 1.0/6.0,
+			val w4 :Double= 1.0/24 ,
+			val w5 :Double= 1.0/120
+		) extends Module{
+			
+			//
+			
+			val io = IO(new FixedPointUnaryIO(preci, precf))
+			//all less than 1
+			val w0f = (w0 * (1<<precf)).toInt.S
+			val w1f = (w1 * (1<<precf)).toInt.S
+			val w2f = (w2 * (1<<precf)).toInt.S
+			val w3f = (w3 * (1<<precf)).toInt.S
+			val w4f = (w4 * (1<<precf)).toInt.S
+			
+			if(stages == 1){
+				//X pipeline
+				val first_stage = Module(new PipelineUInt( Map(
+				 "prec" -> (preci + precf).toString,
+				 "desiredName" -> "PipelineData")))
+			
+				//Multiplier
+				// val first_mul = Module(new MultiplierShift(
+				// 	Throughput = MultThroughput, Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+				val first_mul = Module(new BoothMultiplier(
+					 Delay = MultDelay,  Prec1 = preci+precf,  Prec2 = preci+precf))
+								 
+				//First Pipe
+				first_stage.io.in.bits := Cat(io.data.i, io.data.f)
+				first_stage.io.out.ready := first_mul.io.out.ready
+				first_stage.io.in.valid := first_mul.io.in.valid
+				
+				//First Mul
+				first_mul.io.math.data1 := Cat(io.data.i, io.data.f).asSInt//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
+				first_mul.io.math.data2 := w1f.asSInt//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
+				first_mul.io.out.ready := io.out.ready
+				first_mul.io.in.valid := io.in.valid
+				val res3 = Wire(SInt((preci+preci+precf+precf).W))
+				val res3i = Wire(UInt((preci).W))
+				val res3f = Wire(UInt((precf).W))
+				res3 := first_mul.io.math.res + (w0f << precf)
+				res3i := res3(preci+precf+precf-1, precf+precf)
+				res3f := res3(precf+precf-1, precf)
+				
+				//top io
+				io.in.ready :=  first_mul.io.in.ready
+				io.out.valid := first_mul.io.out.valid
+				io.res.i := res3i
+				io.res.f := res3f
+				io.debug.data := first_stage.io.out.bits
+				
+			} else if(stages == 2){
+			
+				//X pipeline
+				val first_stage = Module(new PipelineUInt( Map(
+					 "prec" -> (preci + precf).toString,
+					 "desiredName" -> "PipelineData")))
 				// val second_stage = Module(new PipelineData( preci + precf))
 				
 				//Multiplier
@@ -129,11 +348,11 @@ class approx_op(val preci:Int = 8, val precf:Int = 8,
 				first_stage.io.in.valid := first_mul.io.in.valid
 			
 				//First Mul
-				first_mul.io.math.data1 := Cat(io.data.i, io.data.f)//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
-				first_mul.io.math.data2 := w2f//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
+				first_mul.io.math.data1 := Cat(io.data.i, io.data.f).asSInt//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
+				first_mul.io.math.data2 := w2f.asSInt//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
 				first_mul.io.out.ready := second_mul.io.in.ready
 				first_mul.io.in.valid := io.in.valid
-				val res3 = Wire(UInt((preci+preci+precf+precf).W))
+				val res3 = Wire(SInt((preci+preci+precf+precf).W))
 				val res3i = Wire(UInt((preci).W))
 				val res3f = Wire(UInt((precf).W))
 				res3 := first_mul.io.math.res + (w1f << precf)
@@ -141,11 +360,11 @@ class approx_op(val preci:Int = 8, val precf:Int = 8,
 				res3f := res3(precf+precf-1, precf)
 				
 				//Second Mul
-				second_mul.io.math.data1 := Cat(res3i, res3f)//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
-				second_mul.io.math.data2 := first_stage.io.out.bits//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
+				second_mul.io.math.data1 := Cat(res3i, res3f).asSInt//x.io.all_dataout(0)//Cat(io.data.i, io.data.f)
+				second_mul.io.math.data2 := first_stage.io.out.bits.asSInt//Cat(res2i, res2f)//Cat(io.data.i, io.data.f)
 				second_mul.io.out.ready := io.out.ready
 				second_mul.io.in.valid := first_mul.io.out.valid
-				val res2 = Wire(UInt((preci+preci+precf+precf).W))
+				val res2 = Wire(SInt((preci+preci+precf+precf).W))
 				val res2i = Wire(UInt((preci).W))
 				val res2f = Wire(UInt((precf).W))
 				res2 := second_mul.io.math.res + (w0f << precf)

@@ -25,11 +25,11 @@ import chisel3._
 import helper._
 import chisel3.util._
 
-import suan.PipelineData
+import suan.PipelineSIntData
 
 
 class SIntBasicSquare(HardwareConfig : Map[String, String]) extends SIntIn1Out1(HardwareConfig){
-	val p = Module(new PipelineData( prec = prec_out ))
+	val p = Module(new PipelineSIntData( prec = prec_out ))
 	p.io.in.bits := io.in0 * io.in0
 	io.out := p.io.out.bits
 	p.io.in.valid := io.entry.valid 
@@ -42,7 +42,7 @@ class SIntBasicSquare(HardwareConfig : Map[String, String]) extends SIntIn1Out1(
 
 
 class SIntBasicMultiplier(HardwareConfig : Map[String, String]) extends SIntIn2Out1(HardwareConfig){
-	val p = Module(new PipelineData( prec = prec_out ))
+	val p = Module(new PipelineSIntData( prec = prec_out ))
 	p.io.in.bits := io.in0 * io.in1
 	io.out := p.io.out.bits
 	
@@ -54,7 +54,7 @@ class SIntBasicMultiplier(HardwareConfig : Map[String, String]) extends SIntIn2O
 }
 
 class SIntBasicAdder(HardwareConfig : Map[String, String]) extends SIntIn2Out1(HardwareConfig){
-	val p = Module(new PipelineData( prec = prec_out ))
+	val p = Module(new PipelineSIntData( prec = prec_out ))
 	p.io.in.bits := io.in0 + io.in1
 	io.out := p.io.out.bits
 	
@@ -66,7 +66,7 @@ class SIntBasicAdder(HardwareConfig : Map[String, String]) extends SIntIn2Out1(H
 }
 
 class SIntBasicSubtract(HardwareConfig : Map[String, String]) extends SIntIn2Out1(HardwareConfig){
-	val p = Module(new PipelineData( prec = prec_out ))
+	val p = Module(new PipelineSIntData( prec = prec_out ))
 	p.io.in.bits := io.in0 - io.in1
 	io.out := p.io.out.bits
 	
@@ -78,7 +78,7 @@ class SIntBasicSubtract(HardwareConfig : Map[String, String]) extends SIntIn2Out
 }
 
 class SIntBasicDivider(HardwareConfig : Map[String, String]) extends SIntIn2Out1(HardwareConfig){
-	val p = Module(new PipelineData( prec = prec_out ))
+	val p = Module(new PipelineSIntData( prec = prec_out ))
 	p.io.in.bits := io.in0 / io.in1
 	io.out := p.io.out.bits
 	
@@ -92,7 +92,7 @@ class SIntBasicDivider(HardwareConfig : Map[String, String]) extends SIntIn2Out1
 
 class SIntBasicAdderTree(HardwareConfig: Map[String, String]) extends SIntInNOut1(HardwareConfig){
 
-	val p = Module(new PipelineData( prec = prec_out ))
+	val p = Module(new PipelineSIntData( prec = prec_out ))
 	
 	val ins = List.fill(terms)( Wire( SInt(prec1.W) ) )
 	for(t <- 0 until terms){
