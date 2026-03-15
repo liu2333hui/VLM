@@ -28,6 +28,18 @@ import chisel3.util._
 import suan.PipelineSIntData
 
 
+class SIntBuffer(HardwareConfig : Map[String, String]) extends SIntIn1Out1(HardwareConfig){
+	val p = Module(new PipelineSIntData( prec = prec_out ))
+	p.io.in.bits := io.in0 
+	io.out := p.io.out.bits
+	p.io.in.valid := io.entry.valid 
+	io.entry.ready := p.io.in.ready
+	
+	io.exit.valid := p.io.out.valid
+	p.io.out.ready := io.exit.ready
+
+}
+
 class SIntBasicSquare(HardwareConfig : Map[String, String]) extends SIntIn1Out1(HardwareConfig){
 	val p = Module(new PipelineSIntData( prec = prec_out ))
 	p.io.in.bits := io.in0 * io.in0

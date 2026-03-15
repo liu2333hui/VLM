@@ -26,8 +26,10 @@ import helper._
 
 //Max2
 class SIntMax2( HardwareConfig:Map[String, String]) extends SIntIn2Out1(HardwareConfig) {
+	override def desiredName = HardwareConfig.getOrElse("desiredName", "") + "_SIntMax2"
 
-	val p = Module(new PipelineSIntData( prec = prec_out ))
+	val p = Module(new PipelineSInt( Map("prec" -> prec_out.toString, 
+		"desiredName" -> desiredName ) ))
 	p.io.in.bits := Mux(io.in0 > io.in1, io.in0, io.in1)
 	io.out := p.io.out.bits
 	p.io.in.valid := io.entry.valid 
@@ -55,6 +57,11 @@ class SIntMaxN(HardwareConfig:Map[String, String]) extends SIntInNOut1(HardwareC
   val root :SIntMax2= Module(new SIntMax2(HardwareConfig + ("prec2" -> HardwareConfig("prec1")) ))
   io.out := root.io.out
   
+  
+  root.io.exit  <> io.exit
+  root.io.entry <> io.entry
+  
+  
   val cur_layer = Queue[SIntMax2](root)
   for(i <- 1 until log2Ceil(terms)){
 	  val cur_layer_len = cur_layer.length
@@ -64,6 +71,14 @@ class SIntMaxN(HardwareConfig:Map[String, String]) extends SIntInNOut1(HardwareC
 			val childB : SIntMax2 = Module(new SIntMax2(HardwareConfig + ("prec2" -> HardwareConfig("prec1"))))
 			element.io.in0 := childA.io.out 
 			element.io.in1 := childB.io.out 
+			
+			childA.io.exit  <> io.exit
+			childA.io.entry <> io.entry
+			
+			childB.io.exit  <> io.exit
+			childB.io.entry <> io.entry
+			
+			
 			cur_layer.enqueue(childA)
 			cur_layer.enqueue(childB)
 		  }

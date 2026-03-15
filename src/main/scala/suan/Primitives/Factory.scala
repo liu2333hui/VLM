@@ -13,6 +13,10 @@ class UIntIn2Out1( HardwareConfig : Map[String, String]) extends MultiIOModule {
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec2:Int     = HardwareConfig("prec2").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
+	
+	
+	override def desiredName = HardwareConfig("desiredName")
+	
 	val io = IO(new Bundle {
 		val in0    = Input(UInt(prec1.W))
 		val in1    = Input(UInt(prec2.W))
@@ -25,6 +29,10 @@ class BlackBoxUIntIn2Out1( HardwareConfig : Map[String, String]) extends BlackBo
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec2:Int     = HardwareConfig("prec2").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
+	
+	
+	override def desiredName = HardwareConfig("desiredName")
+	
 	val io = IO(new Bundle {
 		val in0    = Input(UInt(prec1.W))
 		val in1    = Input(UInt(prec2.W))
@@ -37,27 +45,46 @@ class BlackBoxUIntIn2Out1( HardwareConfig : Map[String, String]) extends BlackBo
 class UIntIn1Out1( HardwareConfig : Map[String, String]) extends MultiIOModule {
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
+	
+	override def desiredName = HardwareConfig("desiredName")
+	
 	val io = IO(new Bundle {
-		val in0    = Input(UInt(prec1.W))
-		val out  = Output(UInt(prec_out.W))
-		val entry = new EntryIO()
-		val exit = new ExitIO()
+		// val clock = Input(Clock())
+		// val reset = Input(Bool())
+
+		// val io = new Bundle{
+			val in0    = Input(UInt(prec1.W))
+			val out  = Output(UInt(prec_out.W))
+			val entry = new EntryIO()
+			val exit = new ExitIO()
+		// }
 	})
 }
 class BlackBoxUIntIn1Out1( HardwareConfig : Map[String, String]) extends BlackBox {
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
+	
+	
+	override def desiredName = HardwareConfig("desiredName")
+	
 	val io = IO(new Bundle {
-		val in0    = Input(UInt(prec1.W))
-		val out  = Output(UInt(prec_out.W))
-		val entry = new EntryIO()
-		val exit = new ExitIO()
+		val clock = Input(Clock())
+		val reset = Input(Bool())
+		
+		val io = new Bundle{
+			val in0    = Input(UInt(prec1.W))
+			val out  = Output(UInt(prec_out.W))
+			val entry = new EntryIO()
+			val exit = new ExitIO()
+		}
 	})
 }
 class SIntInNOut1( HardwareConfig : Map[String, String]) extends MultiIOModule {
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
 	val terms:Int = HardwareConfig("terms").toInt
+	override def desiredName = HardwareConfig("desiredName")
+
 	val io = IO(new Bundle {
 		val in0    = Input(Vec(terms, SInt(prec1.W)))
 		val out  = Output(SInt(prec_out.W))
@@ -65,21 +92,31 @@ class SIntInNOut1( HardwareConfig : Map[String, String]) extends MultiIOModule {
 		val exit = new ExitIO()
 	})
 }
+
 class BlackBoxSIntInNOut1( HardwareConfig : Map[String, String]) extends BlackBox {
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
 	val terms:Int = HardwareConfig("terms").toInt
+	override def desiredName = HardwareConfig("desiredName")
+
 	val io = IO(new Bundle {
-		val in0    = Input(Vec(terms, SInt(prec1.W)))
-		val out  = Output(SInt(prec_out.W))
-		val entry = new EntryIO()
-		val exit = new ExitIO()
+		val clock = Input(Clock())
+		val reset = Input(Bool())
+		val io = new Bundle{
+			val in0    = Input(Vec(terms, SInt(prec1.W)))
+			val out  = Output(SInt(prec_out.W))
+			val entry = new EntryIO()
+			val exit = new ExitIO()
+		}
 	})
 }
 class SIntIn2Out1( HardwareConfig : Map[String, String]) extends MultiIOModule {
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec2:Int     = HardwareConfig("prec2").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
+	
+	override def desiredName = HardwareConfig("desiredName")
+	
 	val io = IO(new Bundle {
 		val in0    = Input(SInt(prec1.W))
 		val in1    = Input(SInt(prec2.W))
@@ -92,18 +129,28 @@ class BlackBoxSIntIn2Out1( HardwareConfig : Map[String, String]) extends BlackBo
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec2:Int     = HardwareConfig("prec2").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
+	
+	override def desiredName = HardwareConfig("desiredName")
+	
 	val io = IO(new Bundle {
-		val in0    = Input(SInt(prec1.W))
-		val in1    = Input(SInt(prec2.W))
-		val out  = Output(SInt(prec_out.W))
-		val entry = new EntryIO()
-		val exit = new ExitIO()
+		val clock = Input(Clock())
+		val reset = Input(Bool())
+		val io = new Bundle{		
+			val in0    = Input(SInt(prec1.W))
+			val in1    = Input(SInt(prec2.W))
+			val out  = Output(SInt(prec_out.W))
+			val entry = new EntryIO()
+			val exit = new ExitIO()
+		}
 	})
 }
 
 class SIntIn1Out1( HardwareConfig : Map[String, String]) extends MultiIOModule {
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
+	
+	override def desiredName = HardwareConfig("desiredName")
+	
 	val io = IO(new Bundle {
 		val in0    = Input(SInt(prec1.W))
 		val out  = Output(SInt(prec_out.W))
@@ -114,11 +161,19 @@ class SIntIn1Out1( HardwareConfig : Map[String, String]) extends MultiIOModule {
 class BlackBoxSIntIn1Out1( HardwareConfig : Map[String, String]) extends BlackBox {
 	val prec1:Int     = HardwareConfig("prec1").toInt
 	val prec_out:Int  = HardwareConfig("prec_out").toInt
+	
+	override def desiredName = HardwareConfig("desiredName")
+	
 	val io = IO(new Bundle {
-		val in0    = Input(SInt(prec1.W))
-		val out  = Output(SInt(prec_out.W))
-		val entry = new EntryIO()
-		val exit = new ExitIO()
+		val clock = Input(Clock())
+		val reset = Input(Bool())
+
+		val io = new Bundle{
+			val in0    = Input(SInt(prec1.W))
+			val out  = Output(SInt(prec_out.W))
+			val entry = new EntryIO()
+			val exit = new ExitIO()
+		}
 	})
 }
 
@@ -130,6 +185,7 @@ class FixedPointIn2Out1( HardwareConfig : Map[String, String]) extends MultiIOMo
 	val prec_outi:Int     = HardwareConfig("prec_outi").toInt
 	val prec_outf:Int     = HardwareConfig("prec_outf").toInt
 	
+	override def desiredName = HardwareConfig("desiredName")
 	val io = IO(new Bundle {
 		val in0 = new FP(prec1i, prec1f)
 		val in1 = new FP(prec2i, prec2f)
@@ -147,12 +203,17 @@ class BlackBoxFixedPointIn2Out1( HardwareConfig : Map[String, String]) extends B
 	val prec_outi:Int     = HardwareConfig("prec_outi").toInt
 	val prec_outf:Int     = HardwareConfig("prec_outf").toInt
 	
+	override def desiredName = HardwareConfig("desiredName")
 	val io = IO(new Bundle {
-		val in0 = new FP(prec1i, prec1f)
-		val in1 = new FP(prec2i, prec2f)
-		val out = Flipped( new FP(prec_outi, prec_outf) )
-		val exit =new  ExitIO()
-		val entry = new EntryIO()
+		val clock = Input(Clock())
+		val reset = Input(Bool())
+		val io = new Bundle{
+			val in0 = new FP(prec1i, prec1f)
+			val in1 = new FP(prec2i, prec2f)
+			val out = Flipped( new FP(prec_outi, prec_outf) )
+			val exit =new  ExitIO()
+			val entry = new EntryIO()
+		}
 	})
 	
 }
@@ -192,6 +253,18 @@ class BlackBoxFixedPointIn1Out1( HardwareConfig : Map[String, String]) extends B
 //BinaryIn1Out1
 //BinaryIn2Out1
 
+
+
+
+
+
+
+
+
+
+
+
+
 //Factory Method
 object PrimitiveFactory {
 	def CreateUIntIn1Out1( primitive_name:String,  HardwareConfig : Map[String, String] ): UIntIn1Out1  = {
@@ -212,37 +285,121 @@ object PrimitiveFactory {
 
 
 
-	def CreateSIntIn1Out1( primitive_name:String,  HardwareConfig : Map[String, String] ): SIntIn1Out1  = {
+	def CreateSIntIn1Out1( primitive_name:String,  HardwareConfig : Map[String, String], desired_name:String = "" ): SIntIn1Out1  = {
+		
+		var pseudoname = desired_name
+		if(desired_name == ""){
+			pseudoname = primitive_name
+		}
+		var hc = HardwareConfig + ("desiredName" -> pseudoname)
+		
 		val out =   primitive_name match {
 			case "SIntBasicSquare" => new SIntBasicSquare(HardwareConfig)
+			case "SIntBuffer" => new SIntBuffer(HardwareConfig)
 			// case "SIntTrigCos" => new SIntTrigCos(HardwareConfig)
 			case _     => throw new IllegalArgumentException("Unknown type " + primitive_name)
 		}
 		out
 	}
+	
+	def CreateBlackBoxSIntIn1Out1( primitive_name:String,  HardwareConfig : Map[String, String],
+			 save_folder:String,
+			 id:Integer = 0,
+			desired_name:String = "",
+		 ):BlackBoxSIntIn1Out1 = {
+		println(primitive_name + "\t" + id + "\t" + desired_name)
+		if(id == 0){
+			"Creating instance ... "
+			new (chisel3.stage.ChiselStage).execute(Array("--target-dir", save_folder ),
+				Seq(ChiselGeneratorAnnotation(() => 
+					CreateSIntIn1Out1( primitive_name, HardwareConfig + ("desiredName" -> desired_name), desired_name  )				
+			)))	
+			
+		}
+			
+		//Return the Blackbox
+		new BlackBoxSIntIn1Out1(HardwareConfig + ("desiredName" -> desired_name) )		
+	}
+	
 
-	def CreateSIntIn2Out1( primitive_name:String,  HardwareConfig : Map[String, String] ): SIntIn2Out1 = {
+	def CreateSIntIn2Out1( primitive_name:String,  HardwareConfig : Map[String, String], desired_name:String = "" ): SIntIn2Out1 = {
+		var pseudoname = desired_name
+		if(desired_name == ""){
+			pseudoname = primitive_name
+		}
+		var hc = HardwareConfig + ("desiredName" -> pseudoname)
+		
+		
 		val out =   primitive_name match {
 			case "SIntBasicMultiplier" => new SIntBasicMultiplier(HardwareConfig)
 			
 			case "SIntBasicSubtract" => new SIntBasicSubtract(HardwareConfig)
-			
+			case "SIntBasicAdder" => new SIntBasicAdder(HardwareConfig)
+						
 			case "SIntMax2" => new SIntMax2(HardwareConfig)
+			
+			case "SIntBoothMultiplier" => new SIntBoothMultiplier(HardwareConfig)
+			
 			case _     => throw new IllegalArgumentException("Unknown type " + primitive_name)
 		}
 		out
 	}
 	
-	def CreateSIntInNOut1( primitive_name:String,  HardwareConfig : Map[String, String] ): SIntInNOut1 = {
+	def CreateBlackBoxSIntIn2Out1( primitive_name:String,  HardwareConfig : Map[String, String],
+			 save_folder:String,
+			 id:Integer = 0,
+			desired_name:String = "",
+		 ):BlackBoxSIntIn2Out1 = {
+		println(primitive_name + "\t" + id + "\t" + desired_name)
+		if(id == 0){
+			"Creating instance ... "
+			new (chisel3.stage.ChiselStage).execute(Array("--target-dir", save_folder ),
+				Seq(ChiselGeneratorAnnotation(() => 
+					CreateSIntIn2Out1( primitive_name, HardwareConfig + ("desiredName" -> desired_name), desired_name  )				
+			)))	
+			
+		}
+			
+		//Return the Blackbox
+		new BlackBoxSIntIn2Out1(HardwareConfig + ("desiredName" -> desired_name) )		
+	}
+	
+	def CreateSIntInNOut1( primitive_name:String,  HardwareConfig : Map[String, String], desired_name:String = "" ): SIntInNOut1 = {
+		
+		var pseudoname = desired_name
+		if(desired_name == ""){
+			pseudoname = primitive_name
+		}
+		var hc = HardwareConfig + ("desiredName" -> pseudoname)
+		
+		
 		val out =   primitive_name match {
 			case "SIntBasicAdderTree" => new SIntBasicAdderTree(HardwareConfig)
 			case "SIntMaxN" => new SIntMaxN(HardwareConfig)
+			case "SIntAdderN" => new SIntAdderN(HardwareConfig)
 			// case "SIntBasicAdderSum" => new SIntBasicAdderSum(HardwareConfig)
 			case _     => throw new IllegalArgumentException("Unknown type " + primitive_name)
 		}
 		out
 	}
-	
+	def CreateBlackBoxSIntInNOut1( primitive_name:String,  HardwareConfig : Map[String, String],
+			 save_folder:String,
+			 id:Integer = 0,
+			desired_name:String = "",
+		 ):BlackBoxSIntInNOut1 = {
+		println(primitive_name + "\t" + id + "\t" + desired_name)
+		if(id == 0){
+			"Creating instance ... "
+			new (chisel3.stage.ChiselStage).execute(Array("--target-dir", save_folder ),
+				Seq(ChiselGeneratorAnnotation(() => 
+					CreateSIntInNOut1( primitive_name, HardwareConfig + ("desiredName" -> desired_name), desired_name  )				
+			)))	
+			
+		}
+			
+		//Return the Blackbox
+		new BlackBoxSIntInNOut1(HardwareConfig + ("desiredName" -> desired_name) )		
+	}
 	
 	def CreateBlackBoxFixedPointIn1Out1( primitive_name:String,  HardwareConfig : Map[String, String],
 			 save_folder:String,
@@ -258,7 +415,7 @@ object PrimitiveFactory {
 			"Creating instance ... "
 			new (chisel3.stage.ChiselStage).execute(Array("--target-dir", save_folder ),
 				Seq(ChiselGeneratorAnnotation(() => 
-					CreateFixedPointIn1Out1( primitive_name, HardwareConfig, desired_name  )				
+					CreateFixedPointIn1Out1( primitive_name, HardwareConfig + ("desiredName" -> desired_name), desired_name  )				
 			)))	
 			
 		}

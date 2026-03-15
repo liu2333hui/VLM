@@ -51,18 +51,36 @@ class DenseFixedPointOnlineSoftmaxDenominatorPEArray(HardwareConfig:Map[String,S
 	
 	//STAGE 1
 	// 1. M += Max(M_prev, X)
-	val mp = List.fill(I)( Module( PrimitiveFactory.CreateSIntInNOut1(
-		"SIntMaxN", 
-		Map(
-			"prec1" -> prec1.toString,
-			"prec_out" -> prec1.toString	,	
-			"terms"   -> J.toString
-		)
-	)  )  )
+	// val mp = List.fill(I)( Module( PrimitiveFactory.CreateSIntInNOut1(
+	// 	"SIntMaxN", 
+	// 	Map(
+	// 		"prec1" -> prec1.toString,
+	// 		"prec_out" -> prec1.toString	,	
+	// 		"terms"   -> J.toString
+	// 	)
+	// )  )  )
+	val mp = Seq.tabulate(I)(i =>
+		Module( PrimitiveFactory.CreateBlackBoxSIntInNOut1(
+			primitive_name="SIntMaxN",
+			desired_name="SIntMaxN_mp", 
+			HardwareConfig=Map(
+				"prec1" -> prec1.toString,
+				"prec_out" -> prec1.toString,
+				"terms" -> J.toString,
+			),
+			save_folder = save_folder,
+			id = i
+		)  ) 
+	)
+	
 	
 	for(i <- 0 until I){
 	for(j <- 0 until J){
-		mp(i ).io.in0(j) := Cat(io.in0( j+J*i ).i, io.in0( j+J*i ).f).asSInt
+		
+		mp(i ).io.clock := clock
+		mp(i ).io.reset := reset
+		
+		mp(i ).io.io.in0(j) := Cat(io.in0( j+J*i ).i, io.in0( j+J*i ).f).asSInt
 		// 	io.out0(i).i := mp(i).io.out(prec1i+prec1f-1,prec1f)
 		// 	io.out0(i).f := mp(i).io.out(prec1f-1,0)
 			
@@ -83,16 +101,16 @@ class DenseFixedPointOnlineSoftmaxDenominatorPEArray(HardwareConfig:Map[String,S
 	)  )  )	
 	
 	for(i <- 0 until I){
-		mp2(i ).io.in0 := mp(i).io.out 
+		mp2(i ).io.in0 := mp(i).io.io.out 
 		mp2(i ).io.in1 := Cat(io.in1(i).i, io.in1(i).f).asSInt
 		
 		io.out0(i).i := mp2(i).io.out(prec2i+prec2f-1,prec2f)
 		io.out0(i).f := mp2(i).io.out(prec2f-1,0)
 
 		// mp(i).io.entry <> io.entry
-		mp(i).io.exit <> mp2(i).io.entry
+		mp(i).io.io.exit <> mp2(i).io.entry
 		
-		mp(i).io.entry.valid := io.entry.valid		
+		mp(i).io.io.entry.valid := io.entry.valid		
 		// io.entry.ready := mp(i).io.entry.ready
 		// mp(i).io.entry.valid := io.entry.valid		
 		
@@ -196,7 +214,7 @@ class DenseFixedPointOnlineSoftmaxDenominatorPEArray(HardwareConfig:Map[String,S
 		
 		
 		//连接io.entry.ready <> hardware
-		io.entry.ready := XStage1(j+J*i).io.in.ready && mp(i).io.entry.ready
+		io.entry.ready := XStage1(j+J*i).io.in.ready && mp(i).io.io.entry.ready
 		
 		//连接io.exit <> hardware
 		io.exit.valid := D12(j+J*i).io.io.exit.valid
@@ -339,8 +357,8 @@ class DenseFixedPointOnlineSoftmaxDenominatorPEArray(HardwareConfig:Map[String,S
  object DenseFixedPointOnlineSoftmaxDenominatorPEArrayTest extends App{
  	val file = "./generaced/Primitive/DenseFixedPointOnlineSoftmaxDenominatorPEArray"
  	
-	val I = 4
-	val J = 2
+	val I = 8
+	val J = 8
 	val prec = 8
 	
 	new (chisel3.stage.ChiselStage).execute(Array("--target-dir", file),
@@ -369,6 +387,7 @@ class DenseFixedPointOnlineSoftmaxDenominatorPEArray(HardwareConfig:Map[String,S
  	sim.iverilog(svtbfile = file+"/DenseFixedPointOnlineSoftmaxDenominatorPEArray.tb.sv",
 		svfiles = Seq(file+"/DenseFixedPointOnlineSoftmaxDenominatorPEArray.v",
 			file+"/FixedPointTrigExp_D12.v", file+"/FixedPointTrigExp_D22.v", 
+			file+"/SIntMaxN_mp.v", 
 		), svtb = """
  			initial begin
 				Reset();
