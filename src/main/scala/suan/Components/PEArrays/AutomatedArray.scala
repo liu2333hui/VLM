@@ -10,6 +10,17 @@ import chisel3.experimental._
 import chisel3.util._ 
 
 
+import java.io.PrintWriter
+
+
+/*
+	HighLevelAnalysis (Class for high level analysis of tensor algebra)
+	
+	HighLevel (Object containing functions to create PE Array code and Blackboxes)
+		- parseComplex
+		- FindUniqueVars
+		- 
+*/
 class HighLevelAnalysis(
 
 		val ins:List[String],
@@ -49,6 +60,14 @@ object HighLevel{
 	
 	//multiple ops
 	def parseComplex(exprs : List[String]) = {
+		
+		
+		//Make into a complete tree (todos - automated)
+		// var meta2 = HighLevel.parseComplex(List(
+		// 		"sum[i] = SIntBasicAdd(in0[i,j])",//Step 1
+		// 		"out0[i] = SIntBasicAdd(out0_p[i],sum[i])", //Step 2
+		// ))
+		
 		
 		var meta:List[HighLevelAnalysis] = List()
 		for(expr <- exprs){
@@ -96,39 +115,57 @@ object HighLevel{
 		var op :String = ""
 		println("Combine Meta")
 		
-		//input
-		var midx = 0
-		var nidx = 0
-		for(m <- meta){
-			nidx = 0
-			for(n <- meta){
-				if(nidx != midx){
-					var ins_list = FindUniqueVars(main = m.ins, filter = n.outs)
-					// println("ins_list->" + ins_list)
-					ins ++= ins_list
-				}
-				nidx = nidx + 1
-			}
-			midx = midx + 1
-		}
-		ins = ins.toSet.toList
-		// println("ins " + ins)
+		//Algorithm
+		//ins:in0,
+		//ins:out0_p,
+		//ins:out0_p_1,sum,
+		//ins: in0, out0_p, out0_p_1, sum
+		//outs:sum,out0_p_1,out0,
+		//ins` = in0, out0_p
+		//outs`= out0
 		
-		//output
-		nidx = 0; midx =0 ;
+		var itmp:List[String]  = List()
+		var otmp:List[String]  = List()
 		for(m <- meta){
-			nidx = 0
-			for(n <- meta){
-				if(nidx != midx){
-					var ins_list = FindUniqueVars(main = m.outs, filter = n.ins)
-					// println("outs_list->" + ins_list)
-					outs ++= ins_list
-				}
-				nidx = nidx + 1
-			}
-			midx = midx + 1
+			itmp = itmp ++ m.ins 
+			otmp = otmp ++ m.outs
 		}
-		outs = outs.toSet.toList
+		ins = FindUniqueVars(itmp, otmp).toSet.toList
+		outs = FindUniqueVars(otmp,itmp).toSet.toList
+		
+		//input
+		// var midx = 0
+		// var nidx = 0
+		// for(m <- meta){
+		// 	nidx = 0
+		// 	for(n <- meta){
+		// 		if(nidx != midx){
+		// 			var ins_list = FindUniqueVars(main = m.ins, filter = n.outs)
+		// 			println("ins_list->" + ins_list)
+		// 			ins ++= ins_list
+		// 		}
+		// 		nidx = nidx + 1
+		// 	}
+		// 	midx = midx + 1
+		// }
+		// ins = ins.toSet.toList
+		// // println("ins " + ins)
+		
+		// //output
+		// nidx = 0; midx =0 ;
+		// for(m <- meta){
+		// 	nidx = 0
+		// 	for(n <- meta){
+		// 		if(nidx != midx){
+		// 			var ins_list = FindUniqueVars(main = m.outs, filter = n.ins)
+		// 			// println("outs_list->" + ins_list)
+		// 			outs ++= ins_list
+		// 		}
+		// 		nidx = nidx + 1
+		// 	}
+		// 	midx = midx + 1
+		// }
+		// outs = outs.toSet.toList
 		// println("outs " + outs)
 		
 		
@@ -162,7 +199,8 @@ object HighLevel{
 	
 	def getSubPENames(meta:HighLevelAnalysis, idx:Integer) = {
 		
-		"hardware" + idx
+		"hardware_" + idx + "_" + meta.op  
+		
 	}
 	def createSubPEBlackBoxes(meta:List[HighLevelAnalysis], desiredName:String) = {
 		var s = ""
@@ -263,25 +301,45 @@ object HighLevel{
 			for(n <- meta){
 				if(midx > nidx){
 					
-					println("meta pairs " , midx, nidx, m,n)
-					s += "\n	//Connect Intermediate "+i+""
-					s += create_begin_for(meti.var2iters(i))
 					
-					var tag = i+"""("""+get_iter_idx(meti.var2iters(i))+""")"""
-						
+					
+
 					//find ins, outs
 					if(n.ins.contains(i) && m.outs.contains(i)){
+						// println("meta pairs " , midx, nidx, m,n)
+						s += "\n	//Connect Intermediate "+i+""
+						s += create_begin_for(meti.var2iters(i))
+						
+						var tag = i+"""("""+get_iter_idx(meti.var2iters(i))+""")"""
+							
+							
 						s += "\n		"+getSubPENames(n, nidx)+".io.io."+tag
 						s += " := "+getSubPENames(m, midx) + ".io.io."+tag
+						
+						
+						s += create_end_for(meti.var2iters(i))
+						s += "\n"
+						
 					}
-					
-					if(m.ins.contains(i) && n.outs.contains(i)){
+					else if(m.ins.contains(i) && n.outs.contains(i)){
+						// println("meta pairs " , midx, nidx, m,n)
+						s += "\n	//Connect Intermediate "+i+""
+						s += create_begin_for(meti.var2iters(i))
+						
+						var tag = i+"""("""+get_iter_idx(meti.var2iters(i))+""")"""
+							
+							
 						s += "\n		"+getSubPENames(m, midx)+".io.io."+tag
 						s += " := "+getSubPENames(n, nidx) + ".io.io."+tag
+						
+						
+						s += create_end_for(meti.var2iters(i))
+						s += "\n"
+					}else {
+						
+						
 					}
 					
-					s += create_end_for(meti.var2iters(i))
-					s += "\n"
 					
 				}
 				nidx = nidx + 1
@@ -296,16 +354,170 @@ object HighLevel{
 		
 	}
 	
-	def connectComplexReadyValid(meta:List[HighLevelAnalysis], meti: HighLevelAnalysis) = {
+	def findDepModules(meta:List[HighLevelAnalysis], vars: List[String],
+		mode:String = "Downstream"):List[Int]
+		= {
+		var l: List[Int] = List()
+		for(v <- vars){
+			var midx :Int= 0
+			for(m <- meta){
+				if(mode=="Downstream"){				
+					if(m.ins.contains(v)){
+						l ++= List(midx)
+					}
+				}else if(mode=="Upstream"){
+					if(m.outs.contains(v)){
+						l ++= List(midx)
+					}
+				}
+				midx = midx+1
+			}
+		}
+		l.toSet.toList
+	}
+	
+	
+	def findDepModulesWithTop(meta:List[HighLevelAnalysis], 
+		meti:HighLevelAnalysis, vars:List[String],
+		mode:String = "Downstream"):List[Int] = {
+
+		var l: List[Int] = List()
 		
-		//链接top ready/valid
+		if(mode == "Downstream"){
+			l ++= findDepModules(meta, vars, mode="Downstream")
+			if(findDepModules(List(meti), vars, mode="Upstream").length >= 1){
+				l ++= List(meta.length)
+			}
+		}else{
+			l ++= findDepModules(meta, vars, mode="Upstream")
+			if(findDepModules(List(meti), vars, mode="Downstream").length >= 1){
+				l ++= List(meta.length)
+			}
+		}
 		
-		
-		
-		//链接submodule ready/valid
+		l.toSet.toList
 		
 	}
 	
+	def combineAnd(nets:List[String], tail:String="") :String= {
+		var s = ""
+		var nidx = 0
+		for(n <- nets){
+			if(nidx + 1 == nets.length){
+				s += n+tail
+			}else{
+				s += n+tail
+				s += " & "
+			}
+			nidx += 1
+		}
+		s
+	}
+	
+	def getFifoName(meta:HighLevelAnalysis, hardwareid :Integer, inputName:String) = {
+		getSubPENames(meta, hardwareid) + "_"+inputName+"_fifo"
+	}
+	
+	def createInputFifos(meta:List[HighLevelAnalysis], 
+		module2entries:Map[Int, Int] = Map(),
+		default_entries:Int = 8) = {
+		
+		var s = "\n"		
+		var midx = 0
+		for(m <- meta){
+			var var2type = getVar2type(m)
+			for(v <- var2type.keys){
+				println(v, var2type(v))
+			}
+			for(i <- m.ins){
+				var data = var2type(i) //SInt(prec0.W)			
+				s += "\tval " + getFifoName(m, midx, i) + """ = Module(new Queue("""+data+","+
+				 "entries = "+module2entries.getOrElse(midx, default_entries)+")\n"
+			}
+			midx += 1
+		}
+		
+		s
+	}
+	
+	def connectComplexReadyValid(meta:List[HighLevelAnalysis], meti: HighLevelAnalysis) = {
+		
+		var s = ""
+		
+		//链接top entry ready/valid
+		//1. io.entry
+		// meti.ins
+		var l = findDepModules(meta, meti.ins, mode="Downstream")
+		// println("io downstream" + l)
+		s += "\n	//Connect Top io entry\n"
+		var nets:List[String] = List()
+		for(vastu <- l){
+			nets ++= List(getSubPENames(meta(vastu), vastu) )
+			s += "\t"+getSubPENames(meta(vastu), vastu) + 
+				".io.io.entry.valid := io.entry.valid\n"
+		} 
+		println("top nets ", nets)
+		s += "\tio.entry.ready := "+combineAnd(nets, tail=".io.io.entry.ready")+"\n"
+
+		//链接submodule ready/valid
+		//2. hardware1.io.entry
+		//	 hardware1.io.exit
+		var midx = 0
+		for(m <- meta){
+			// println(m.ins)
+			var lin = findDepModulesWithTop(meta, meti, m.ins, mode="Upstream")
+			// println(getSubPENames(m, midx)+" upstream" + l)
+			// println(m.outs)
+			var lout = findDepModulesWithTop(meta, meti, m.outs, mode="Downstream")
+			// println(getSubPENames(m, midx)+" Downstream" + l)
+			
+			midx += 1
+			//N-1 = meti, the overall module
+		}
+		
+		//链接top exit ready/valid
+		// meta.outs
+		l = findDepModules(meta, meti.outs, mode="Upstream")
+		println("io upstream" + l)
+		
+		
+		s
+	}
+	
+	
+	def getLevelize(meta:List[HighLevelAnalysis], meti:HighLevelAnalysis) 
+		: Map[Int, List[HighLevelAnalysis]] = {
+		
+		var m : Map[Int, List[HighLevelAnalysis]] = Map()
+		
+		// var level = 0
+		
+		// var cur_ins : List[String] = List()
+		
+		// cur_ins = meti.ins
+		// while(m.length != meta.length){
+		// 	var next_ins:List[String] = List()
+		// 	var cur_modules:List[HighLevelAnalysis] = List()
+		// 	for(i <- cur_ins){
+				
+		// 		//if in the input of the module, add it
+		// 		for(m <- meta){
+		// 			if(m.ins.contains(i)){
+		// 				cur_modules ++= List(m)
+		// 				// next_ins ++= next_ins.//Todos
+		// 			}
+		// 		}
+				
+		// 	}
+			
+		// 	level = level + 1
+		// }
+		m
+		
+	}
+	// def makeLevel(meta:List[HighLevelAnalysis], meti:HighLevelAnalysis) = {
+		
+	// }
 	
 	//Create a complex array (multiple single ararys)
 	//Assuming the dependencies are immediate (etc. b = ax, y = b + c). (b = ax, c = reduce(b))
@@ -324,6 +536,9 @@ object HighLevel{
 
 		//(WRITE) 3 tilings + Precisions
 		var meti = combineMeta(meta)		
+		println("meti in " + meti.ins)
+		println("meti out " + meti.outs)
+	
 		s += createTilingsPrecisions(meti, desiredName)
 		
 		//(THINK+WRITE) 4. IO and datatype
@@ -342,10 +557,13 @@ object HighLevel{
 		//8. Connect Intermediates
 		s += connectComplexIntermediates(meta, meti)
 		
-		//9. Connect Ready Valid
+		//9. Create Input Fifos
+		// s += createInputFifos(meta)
+		
+		//10. Connect Ready Valid
 		s += connectComplexReadyValid(meta, meti)
 		
-		//(WRITE) 10. end module
+		//(WRITE) 11. end module
 		s += "\n}\n"
 		
 		
@@ -751,6 +969,32 @@ class BlackBox"""+desiredName+"""PEArray(HardwareConfig: Map[String,String]) ext
 			s += precs		
 			s
 		}
+		
+		def getVar2type(
+			meta: HighLevelAnalysis,
+		) = {
+			var var2type:Map[String,String] = Map()
+			if(meta.op.contains("SInt")){
+				for (in <- meta.ins){
+					var precs = in.split("_")(0) + "prec"	
+					var v = in//+"var"
+					var r = "SInt("+precs+".W)"
+					var2type = var2type + (v -> r) 
+				}
+				for (in <- meta.outs){
+					var precs = in + "prec"
+					var v = in//+"var"
+					var r = "SInt("+precs+".W)"
+					var2type = var2type + (v -> r) 
+				}
+			}else if(meta.op.contains("UInt")){
+			}else if(meta.op.contains("FixedPoint")){
+			}else if(meta.op.contains("Floating")){
+			}else if(meta.op.contains("Binary")){
+			}
+			
+			var2type
+		}
 					
 		def analyzePEArrayIO(
 			meta: HighLevelAnalysis, 
@@ -759,28 +1003,21 @@ class BlackBox"""+desiredName+"""PEArray(HardwareConfig: Map[String,String]) ext
 		) = {
 			var io_inouts = "\n"
 			var dtype = "SInt"
+			
+			var var2type:Map[String,String] = getVar2type(meta)//Map()
+			
 			if(meta.op.contains("SInt")){
 				dtype = "SInt"
 				
 				for (in <- meta.ins){
-					// var tilesize = get_tilesize(meta, iter2tile, in)
 					var iters = get_iters(meta, in)
-					// var prec = var2prec.getOrElse(in, var2precision.getOrElse(in, 8))
-					// if(iters == ""){
-					// 	iters = "1"
-					// }
-				
 					var precs = in.split("_")(0) + "prec"	
 					io_inouts += "		val " + in + " = Input(Vec("+iters+", SInt("+precs+".W)))\n"
 				}
 				
 				for (in <- meta.outs){
-					// var tilesize = get_tilesize(meta, iter2tile, in)
-					// var prec = var2prec.getOrElse(in, var2precision.getOrElse(in, 8))
-					
 					var iters = get_iters(meta, in)
 					var precs = in + "prec"
-					
 					io_inouts += "		val " + in + " = Output(Vec("+iters+", SInt("+precs+".W)))\n"
 				}
 				
@@ -814,8 +1051,8 @@ class BlackBox"""+desiredName+"""PEArray(HardwareConfig: Map[String,String]) ext
 			Map(
 				"dtype" -> dtype,
 				"io_inouts" -> io_inouts,
-				"s" -> s
-			)
+				"s" -> s,
+			) ++ var2type
 		}
 		
 	def analyzePEDataflow(	meta: HighLevelAnalysis, 
@@ -1079,6 +1316,37 @@ class BlackBox"""+desiredName+"""PEArray(HardwareConfig: Map[String,String]) ext
 	
 	}
 	
+		def save(s :String, f:String) = {
+			var writer = new PrintWriter(s)
+				try {writer.write(s)} finally {writer.close()}
+			
+		}
+		
+		def GenerateMainFunction( g :List[String]) = {
+		
+			var s = ""
+			
+			s += GetChiselHeader()
+			
+			s += """
+object Main extends App {
+					
+
+"""
+			for(gg <- g){
+			
+				s += gg
+				
+			}
+			
+			
+			s += """
+}
+			"""
+			
+			s
+		}
+	
 	
 		def GeneratePEArrayVerilog(meta: HighLevelAnalysis, 
 			var2prec :Map[String,Int],
@@ -1105,6 +1373,7 @@ class BlackBox"""+desiredName+"""PEArray(HardwareConfig: Map[String,String]) ext
 			
 			
 			var g = """
+	
 	var file = """+"\"./generated/latest/"+desiredName+"\""+"""
 	new (chisel3.stage.ChiselStage).execute(Array("--target-dir", file),
 		Seq(ChiselGeneratorAnnotation(() => 

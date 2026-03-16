@@ -40,7 +40,12 @@ object Gougu1 extends App {
 	//In same system
 	var meta2 = HighLevel.parseComplex(List(
 			"sum[i] = SIntBasicAdd(in0[i,j])",//Step 1
-			"out0[i] = SIntBasicAdd(out0_p[i],sum[i])", //Step 2
+			
+			"out0[i] = SIntBasicAdd(out0_p_1[i],sum[i])", //Step 2
+			
+			"out0_p_1[i] = SIntBuffer(out0_p[i])", //pipelined (todos, automated later)
+			
+			
 	))
 	
 	var raw = HighLevel.createComplexArray(meta2, "AdderTree")
@@ -100,8 +105,7 @@ object Fangcheng1 extends App{
 	println(chisel1)
 	println(raw("b"))
 	
-	val writer = new PrintWriter("src/main/scala/generated/"+hardware1+".scala") 
-	try {writer.write(chisel1)} finally {writer.close()}
+	HighLevel.save(chisel1, "src/main/scala/generated/"+hardware1+".scala")
 	
 	var raw2 = HighLevel.GeneratePEArrayVerilog(meta,
 		var2prec = var2prec,
@@ -111,22 +115,22 @@ object Fangcheng1 extends App{
 	)
 	println(raw2("g"))
 	
-	        var file = "./generated/latest/SIntAdder"
-	        new (chisel3.stage.ChiselStage).execute(Array("--target-dir", file),
-	                Seq(ChiselGeneratorAnnotation(() =>
-	                        new SIntAdderPEArray(
-	                                Map(
-	                                        "I" -> 8.toString,
-	
-	                                        "out0prec" -> 8.toString,
-	                                        "sumprec" -> 8.toString,
-	                                        "out0_pprec" -> 8.toString,
-	
-	                                        "save_folder" -> file,
-	
-	                                        "desiredName" -> "SIntAdder",
-	                        ))
-	                )))
+	var file = "./generated/latest/SIntAdder"
+	new (chisel3.stage.ChiselStage).execute(Array("--target-dir", file),
+			Seq(ChiselGeneratorAnnotation(() =>
+					new SIntAdderPEArray(
+							Map(
+									"I" -> 8.toString,
+
+									"out0prec" -> 8.toString,
+									"sumprec" -> 8.toString,
+									"out0_pprec" -> 8.toString,
+
+									"save_folder" -> file,
+
+									"desiredName" -> "SIntAdder",
+			))
+	)))
 					
 	// var file = "./generated/latest/SIntAdderReduce"
 	// new (chisel3.stage.ChiselStage).execute(Array("--target-dir", file),
@@ -206,8 +210,12 @@ object Fangtian1 extends App{
 	println(chisel1)
 	println(raw("b"))
 	
-	val writer = new PrintWriter("src/main/scala/generated/"+hardware1+".scala") 
+	var writer = new PrintWriter("src/main/scala/generated/"+hardware1+".scala") 
 	try {writer.write(chisel1)} finally {writer.close()}
+	
+	writer = new PrintWriter("src/main/scala/generated/"+hardware1+"_blackbox.scala") 
+		try {writer.write(raw("b"))} finally {writer.close()}
+	
 	
 	var raw2 = HighLevel.GeneratePEArrayVerilog(meta,
 		var2prec = var2prec,
@@ -216,6 +224,18 @@ object Fangtian1 extends App{
 		desiredName = hardware1
 	)
 	println(raw2("g"))
+	
+	var rr = HighLevel.GenerateMainFunction(
+		List(raw2("g"))
+	)
+	
+	// var rr = raw2("g")
+	
+	
+	
+	writer = new PrintWriter("src/main/scala/generated/main.scala")
+		try {writer.write(rr)} finally {writer.close()}
+	
 	
  //        var file = "./generated/latest/SIntMaxNArray"
  //        new (chisel3.stage.ChiselStage).execute(Array("--target-dir", file),
